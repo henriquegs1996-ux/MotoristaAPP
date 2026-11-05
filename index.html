@@ -1,0 +1,175 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Meu Motorista — Controle Financeiro</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f4f6f8;--panel:#fff;--ink:#17212b;--muted:#718096;--line:#e7ecf0;--green:#138a58;--red:#d94b4b;--blue:#3269c8;--nav:#142b27;--gold:#e7b85c}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:'DM Sans',sans-serif}button,input,select,textarea{font:inherit}button{cursor:pointer}.hidden{display:none!important}
+.auth-wrap{min-height:100vh;display:grid;place-items:center;padding:20px;background:linear-gradient(135deg,#102b25,#1d493d)}.auth-card{background:#fff;border-radius:22px;padding:30px;width:min(420px,100%);box-shadow:0 20px 60px #0003}.brand{font-weight:800;font-size:22px;letter-spacing:-.7px}.brand span{color:var(--green)}.muted{color:var(--muted)}.field{display:grid;gap:6px;margin:12px 0}.field label{font-size:13px;font-weight:700;color:#46515c}.field input,.field select,.field textarea{width:100%;border:1px solid var(--line);border-radius:10px;padding:12px;background:#fff;color:var(--ink);outline:none}.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--green);box-shadow:0 0 0 3px #138a5818}.btn{border:0;border-radius:10px;padding:11px 16px;font-weight:700;background:var(--green);color:#fff}.btn.secondary{background:#edf3f0;color:#245344}.btn.danger{background:#fff0f0;color:#bd3d3d}.btn.full{width:100%;margin-top:8px}.auth-switch{display:flex;gap:8px;margin-top:16px}.auth-switch button{flex:1}
+.layout{display:grid;grid-template-columns:245px 1fr;min-height:100vh}.sidebar{background:var(--nav);color:#fff;padding:24px 16px;display:flex;flex-direction:column;gap:22px}.sidebar .brand{padding:0 10px;color:#fff}.sidebar .brand span{color:var(--gold)}.nav{display:grid;gap:6px}.nav button{border:0;background:transparent;color:#c7d8d2;text-align:left;padding:12px;border-radius:10px;font-weight:600}.nav button.active,.nav button:hover{background:#ffffff18;color:#fff}.side-foot{margin-top:auto;color:#a9c0b7;font-size:12px;padding:10px}
+main{padding:28px;min-width:0;max-width:1500px;width:100%;margin:auto}.topbar{display:flex;justify-content:space-between;align-items:center;gap:14px;margin-bottom:24px}.topbar h1{font-size:25px;margin:0}.top-actions{display:flex;gap:8px;align-items:center}.cards{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin-bottom:18px}.card,.panel{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:18px}.card small{color:var(--muted);font-weight:600}.card strong{display:block;font-size:25px;margin-top:8px;letter-spacing:-.7px}.positive{color:var(--green)}.negative{color:var(--red)}.blue{color:var(--blue)}.grid2{display:grid;grid-template-columns:1.15fr .85fr;gap:16px}.panel h2{font-size:16px;margin:0 0 14px}.section-head{display:flex;justify-content:space-between;align-items:center;gap:10px;margin:24px 0 14px}.section-head h2{margin:0;font-size:19px}.form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 14px}.form-grid .wide{grid-column:1/-1}.table-wrap{overflow:auto}table{width:100%;border-collapse:collapse;font-size:13px;min-width:540px}th,td{text-align:left;padding:11px 9px;border-bottom:1px solid var(--line)}th{color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.4px}td:last-child,th:last-child{text-align:right}.empty{padding:22px;text-align:center;color:var(--muted);font-size:13px}.pill{display:inline-block;padding:5px 9px;border-radius:30px;background:#edf3f0;color:#27634d;font-size:11px;font-weight:700}.notice{padding:12px;border-radius:10px;background:#fff8e8;color:#76551b;font-size:13px;margin:12px 0}.toolbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap}.toolbar input,.toolbar select{padding:10px;border:1px solid var(--line);border-radius:9px;background:#fff}.barline{height:10px;background:#edf1f3;border-radius:20px;overflow:hidden;margin-top:10px}.barline span{display:block;height:100%;background:var(--green);border-radius:20px}.summary-row{display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--line);font-size:13px}.summary-row:last-child{border:0}.mobile-head{display:none}
+@media(max-width:900px){.layout{grid-template-columns:1fr}.sidebar{position:sticky;top:0;z-index:5;padding:10px 12px;gap:8px}.sidebar .brand{padding:4px 8px}.nav{display:flex;overflow:auto}.nav button{white-space:nowrap;padding:9px 11px;font-size:12px}.side-foot{display:none}main{padding:18px 14px 30px}.cards{grid-template-columns:repeat(2,minmax(0,1fr))}.grid2{grid-template-columns:1fr}}
+@media(max-width:520px){.topbar{align-items:flex-start}.topbar h1{font-size:21px}.top-actions{flex-direction:column;align-items:flex-end}.cards{gap:9px}.card{padding:13px}.card strong{font-size:20px}.form-grid{grid-template-columns:1fr}.form-grid .wide{grid-column:auto}.panel{padding:14px}}
+</style>
+</head>
+<body>
+<section id="auth" class="auth-wrap">
+ <div class="auth-card">
+  <div class="brand">MEU <span>MOTORISTA</span></div>
+  <p class="muted">Seu trabalho, seus números, seu resultado.</p>
+  <div id="authError" class="notice hidden"></div>
+  <div class="field"><label>E-mail</label><input id="email" type="email" placeholder="voce@email.com" autocomplete="email"></div>
+  <div class="field"><label>Senha</label><input id="password" type="password" placeholder="Mínimo de 6 caracteres" autocomplete="current-password"></div>
+  <button class="btn full" id="loginBtn">Entrar</button>
+  <button class="btn secondary full" id="signupBtn">Criar minha conta</button>
+  <p class="muted" style="font-size:12px;line-height:1.5">Se a confirmação de e-mail estiver ativada no Supabase, confirme seu cadastro antes de entrar.</p>
+ </div>
+</section>
+<div id="app" class="layout hidden">
+ <aside class="sidebar">
+  <div class="brand">MEU <span>MOTORISTA</span></div>
+  <nav class="nav" id="nav">
+   <button class="active" data-page="dashboard">▦ Dashboard</button>
+   <button data-page="ganhos">＋ Ganhos</button>
+   <button data-page="despesas">－ Despesas</button>
+   <button data-page="combustivel">⛽ Combustível</button>
+   <button data-page="aluguel">▣ Aluguel</button>
+   <button data-page="relatorios">▤ Relatórios</button>
+   <button data-page="config">⚙ Configurações</button>
+  </nav>
+  <div class="side-foot">Dados privados e sincronizados pela sua conta.</div>
+ </aside>
+ <main>
+  <header class="topbar"><div><h1 id="pageTitle">Dashboard</h1><div class="muted" id="todayLabel" style="font-size:12px"></div></div><div class="top-actions"><span id="userEmail" class="muted" style="font-size:12px"></span><button class="btn secondary" id="refreshBtn">Atualizar</button><button class="btn danger" id="logoutBtn">Sair</button></div></header>
+  <div id="message" class="notice hidden"></div>
+  <section id="page-dashboard">
+   <div class="cards">
+    <div class="card"><small>Faturamento bruto</small><strong id="kGross">R$ 0,00</strong></div>
+    <div class="card"><small>Despesas + aluguel</small><strong id="kCosts" class="negative">R$ 0,00</strong></div>
+    <div class="card"><small>Lucro operacional</small><strong id="kProfit" class="positive">R$ 0,00</strong></div>
+    <div class="card"><small>Salário disponível estimado</small><strong id="kSalary" class="blue">R$ 0,00</strong></div>
+   </div>
+   <div class="grid2">
+    <div class="panel"><h2>Resultado do mês</h2><div class="summary-row"><span>Ganhos Uber, 99 e particulares</span><b id="sEarnings">R$ 0,00</b></div><div class="summary-row"><span>Despesas registradas</span><b id="sExpenses">R$ 0,00</b></div><div class="summary-row"><span>Aluguel provisionado no mês</span><b id="sRent">R$ 0,00</b></div><div class="summary-row"><span>Reserva sugerida (20% do lucro positivo)</span><b id="sReserve">R$ 0,00</b></div><div class="summary-row"><span>Salário após reserva</span><b id="sTakeHome">R$ 0,00</b></div></div>
+    <div class="panel"><h2>Distribuição do faturamento</h2><div class="muted" style="font-size:12px">Quanto do faturamento foi consumido pelos custos.</div><div class="barline"><span id="costBar" style="width:0%"></span></div><div class="summary-row"><span>Percentual de custos</span><b id="costPct">0%</b></div><div class="summary-row"><span>Lucro por R$ 100 faturados</span><b id="per100">R$ 0,00</b></div><div class="notice">O salário é uma estimativa. A reserva sugerida começa em 20% do lucro positivo e pode ser ajustada na sua gestão pessoal.</div></div>
+   </div>
+   <div class="section-head"><h2>Últimos lançamentos</h2></div><div class="panel table-wrap"><table><thead><tr><th>Data</th><th>Tipo</th><th>Descrição</th><th>Valor</th></tr></thead><tbody id="recentRows"></tbody></table><div id="recentEmpty" class="empty">Nenhum lançamento neste mês.</div></div>
+  </section>
+  <section id="page-ganhos" class="hidden">
+   <div class="section-head"><h2>Registrar faturamento</h2></div><div class="panel">
+    <form id="earningForm" class="form-grid">
+     <div class="field"><label>Data</label><input name="earning_date" type="date" required></div>
+     <div class="field"><label>Aplicativo / origem</label><select name="platform"><option>Uber</option><option>99</option><option>Particular</option></select></div>
+     <div class="field"><label>Valor bruto (R$)</label><input name="gross_amount" type="number" min="0" step=".01" required placeholder="0,00"></div>
+     <div class="field"><label>Gorjetas (R$)</label><input name="tips" type="number" min="0" step=".01" value="0"></div>
+     <div class="field"><label>Bônus / incentivos (R$)</label><input name="bonus" type="number" min="0" step=".01" value="0"></div>
+     <div class="field"><label>Quantidade de viagens</label><input name="trips" type="number" min="0" step="1" value="0"></div>
+     <div class="field"><label>Horas trabalhadas</label><input name="hours_worked" type="number" min="0" step=".1" value="0"></div>
+     <div class="field"><label>Quilômetros rodados</label><input name="km_driven" type="number" min="0" step=".1" value="0"></div>
+     <div class="field wide"><label>Observações</label><input name="notes" placeholder="Opcional"></div>
+     <div class="wide"><button class="btn">Salvar faturamento</button></div>
+    </form>
+   </div>
+   <div class="section-head"><h2>Histórico de ganhos</h2><div class="toolbar"><input id="earnMonth" type="month"></div></div><div class="panel table-wrap"><table><thead><tr><th>Data</th><th>Origem</th><th>Viagens</th><th>Km</th><th>Valor bruto</th><th></th></tr></thead><tbody id="earningRows"></tbody></table><div id="earningEmpty" class="empty">Nenhum ganho encontrado.</div></div>
+  </section>
+  <section id="page-despesas" class="hidden">
+   <div class="section-head"><h2>Registrar despesa</h2></div><div class="panel"><form id="expenseForm" class="form-grid">
+    <div class="field"><label>Data</label><input name="expense_date" type="date" required></div>
+    <div class="field"><label>Categoria</label><select name="category"><option>Alimentação</option><option>Lavagem</option><option>Estacionamento</option><option>Pedágio</option><option>Manutenção</option><option>Pneus</option><option>Óleo e filtros</option><option>Multas</option><option>Telefone / internet</option><option>Outros</option></select></div>
+    <div class="field"><label>Descrição</label><input name="description" placeholder="Ex.: almoço, troca de óleo"></div>
+    <div class="field"><label>Valor (R$)</label><input name="amount" type="number" min=".01" step=".01" required placeholder="0,00"></div>
+    <div class="field"><label>Forma de pagamento</label><select name="payment_method"><option>Pix</option><option>Dinheiro</option><option>Cartão de débito</option><option>Cartão de crédito</option><option>Outro</option></select></div>
+    <div class="wide"><button class="btn">Salvar despesa</button></div>
+   </form></div>
+   <div class="section-head"><h2>Histórico de despesas</h2><div class="toolbar"><input id="expenseMonth" type="month"></div></div><div class="panel table-wrap"><table><thead><tr><th>Data</th><th>Categoria</th><th>Descrição</th><th>Valor</th><th></th></tr></thead><tbody id="expenseRows"></tbody></table><div id="expenseEmpty" class="empty">Nenhuma despesa encontrada.</div></div>
+  </section>
+  <section id="page-combustivel" class="hidden">
+   <div class="section-head"><h2>Registrar abastecimento</h2></div><div class="panel"><form id="fuelForm" class="form-grid">
+    <div class="field"><label>Data</label><input name="fuel_date" type="date" required></div>
+    <div class="field"><label>Combustível</label><select name="fuel_type"><option>Gasolina</option><option>Etanol</option><option>GNV</option><option>Diesel</option><option>Outro</option></select></div>
+    <div class="field"><label>Litros / m³</label><input name="liters" type="number" min=".001" step=".001" required></div>
+    <div class="field"><label>Preço por litro / m³ (R$)</label><input name="price_per_liter" type="number" min="0" step=".001" required></div>
+    <div class="field"><label>Valor total pago (R$)</label><input name="total_amount" type="number" min="0" step=".01" required></div>
+    <div class="field"><label>Odômetro atual (km)</label><input name="odometer" type="number" min="0" step=".1"></div>
+    <div class="wide"><button class="btn">Salvar abastecimento</button></div>
+   </form></div>
+   <div class="section-head"><h2>Histórico de abastecimentos</h2></div><div class="panel table-wrap"><table><thead><tr><th>Data</th><th>Combustível</th><th>Quantidade</th><th>Odômetro</th><th>Total</th></tr></thead><tbody id="fuelRows"></tbody></table><div id="fuelEmpty" class="empty">Nenhum abastecimento encontrado.</div></div>
+  </section>
+  <section id="page-aluguel" class="hidden">
+   <div class="section-head"><h2>Controle do aluguel</h2></div><div class="panel">
+    <div class="cards" style="grid-template-columns:repeat(2,minmax(0,1fr))"><div class="card"><small>Aluguel semanal configurado</small><strong>R$ 750,00</strong></div><div class="card"><small>Provisão diária</small><strong>R$ 107,14</strong></div></div>
+    <div class="notice">O sistema provisiona 1/7 do aluguel por dia para o cálculo gerencial. O registro do pagamento é separado e não deve ser lançado novamente como despesa, evitando duplicidade.</div>
+    <form id="rentForm" class="form-grid"><div class="field"><label>Data de vencimento</label><input name="due_date" type="date" required></div><div class="field"><label>Valor pago (R$)</label><input name="amount" type="number" min=".01" step=".01" value="750" required></div><div class="field"><label>Data do pagamento (deixe vazio se pendente)</label><input name="paid_date" type="date"></div><div class="wide"><button class="btn">Registrar semana de aluguel</button></div></form>
+   </div>
+   <div class="section-head"><h2>Pagamentos registrados</h2></div><div class="panel table-wrap"><table><thead><tr><th>Vencimento</th><th>Pagamento</th><th>Valor</th><th>Status</th><th></th></tr></thead><tbody id="rentRows"></tbody></table><div id="rentEmpty" class="empty">Nenhum pagamento registrado.</div></div>
+  </section>
+  <section id="page-relatorios" class="hidden">
+   <div class="section-head"><h2>Relatório mensal</h2><div class="toolbar"><input id="reportMonth" type="month"></div></div><div class="panel">
+    <div class="summary-row"><span>Faturamento bruto</span><b id="rGross">R$ 0,00</b></div><div class="summary-row"><span>Despesas lançadas</span><b id="rExpenses">R$ 0,00</b></div><div class="summary-row"><span>Aluguel provisionado</span><b id="rRent">R$ 0,00</b></div><div class="summary-row"><span>Lucro operacional</span><b id="rProfit">R$ 0,00</b></div><div class="summary-row"><span>Reserva sugerida</span><b id="rReserve">R$ 0,00</b></div><div class="summary-row"><span>Salário líquido estimado</span><b id="rSalary">R$ 0,00</b></div><div style="margin-top:15px"><button class="btn secondary" id="printBtn">Imprimir / salvar PDF</button></div>
+   </div>
+  </section>
+  <section id="page-config" class="hidden">
+   <div class="section-head"><h2>Configurações</h2></div><div class="panel">
+    <p class="muted" style="font-size:13px">Configuração inicial do veículo e da regra de reserva.</p>
+    <form id="settingsForm" class="form-grid"><div class="field"><label>Tipo de veículo</label><input value="Alugado" disabled></div><div class="field"><label>Aluguel semanal (R$)</label><input name="rental_amount" type="number" min="0" step=".01" value="750" required></div><div class="field"><label>Limite de quilometragem</label><input value="Sem limite" disabled></div><div class="field"><label>Percentual para reserva (%)</label><input name="reserve_pct" type="number" min="0" max="100" step="1" value="20" required></div><div class="wide"><button class="btn">Salvar configurações</button></div></form>
+    <div class="notice">A reserva sugerida é uma regra gerencial inicial, não uma obrigação. Ajuste conforme seus custos reais, franquia, caução, manutenção contratual e metas.</div>
+   </div>
+  </section>
+ </main>
+</div>
+<script>
+const SUPABASE_URL = "https://aqzjycebhuvrmtowrxum.supabase.co";
+const SUPABASE_ANON_KEY = "sb_publishable_onnIFbCaGJ1qGjcVa4e4Iw_s3sLkLir";
+const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+let currentUser=null, earnings=[], expenses=[], fuels=[], rents=[], settings={rental_amount:750}, reservePct=20;
+const $=id=>document.getElementById(id);
+const money=n=>(Number(n)||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
+const today=()=>new Date().toLocaleDateString('en-CA');
+const monthNow=()=>today().slice(0,7);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function msg(t,error=false){$('message').textContent=t;$('message').classList.remove('hidden');$('message').style.background=error?'#fff0f0':'#eaf6ef';$('message').style.color=error?'#a52e2e':'#246344';setTimeout(()=>$('message').classList.add('hidden'),5000)}
+function authMsg(t){$('authError').textContent=t;$('authError').classList.remove('hidden')}
+function formObj(form){return Object.fromEntries(new FormData(form).entries())}
+function num(v){return v===''||v==null?null:Number(v)}
+async function authAction(kind){$('authError').classList.add('hidden');const email=$('email').value.trim(),password=$('password').value;if(!email||!password){authMsg('Informe e-mail e senha.');return}let r=kind==='signup'?await db.auth.signUp({email,password}):await db.auth.signInWithPassword({email,password});if(r.error){authMsg(r.error.message);return}if(kind==='signup'&&!r.data.session){authMsg('Cadastro criado! Confira seu e-mail para confirmar a conta e depois faça login.');return}await boot(r.data.user)}
+$('loginBtn').onclick=()=>authAction('login');$('signupBtn').onclick=()=>authAction('signup');
+$('logoutBtn').onclick=async()=>{await db.auth.signOut();location.reload()};
+$('refreshBtn').onclick=loadAll;
+$('todayLabel').textContent=new Date().toLocaleDateString('pt-BR',{weekday:'long',day:'2-digit',month:'long',year:'numeric'});
+$('nav').addEventListener('click',e=>{const b=e.target.closest('button[data-page]');if(!b)return;showPage(b.dataset.page)});
+function showPage(p){document.querySelectorAll('main section[id^="page-"]').forEach(s=>s.classList.add('hidden'));$('page-'+p).classList.remove('hidden');document.querySelectorAll('#nav button').forEach(b=>b.classList.toggle('active',b.dataset.page===p));const titles={dashboard:'Dashboard',ganhos:'Ganhos',despesas:'Despesas',combustivel:'Combustível',aluguel:'Aluguel do veículo',relatorios:'Relatórios',config:'Configurações'};$('pageTitle').textContent=titles[p]}
+async function boot(user){currentUser=user;$('auth').classList.add('hidden');$('app').classList.remove('hidden');$('userEmail').textContent=user.email||'';await ensureSettings();await loadAll()}
+async function ensureSettings(){const q=await db.from('driver_settings').select('*').eq('user_id',currentUser.id).maybeSingle();if(q.error){msg(q.error.message,true);return}if(!q.data){const ins=await db.from('driver_settings').insert({user_id:currentUser.id,rental_amount:750,rental_period:'semanal',vehicle_type:'alugado'});if(ins.error)msg(ins.error.message,true)}else{settings=q.data}}
+async function loadAll(){if(!currentUser)return;const [a,b,c,d,s]=await Promise.all([db.from('earnings').select('*').order('earning_date',{ascending:false}),db.from('expenses').select('*').order('expense_date',{ascending:false}),db.from('fuel_logs').select('*').order('fuel_date',{ascending:false}),db.from('rental_payments').select('*').order('due_date',{ascending:false}),db.from('driver_settings').select('*').eq('user_id',currentUser.id).maybeSingle()]);for(const x of [a,b,c,d,s])if(x.error){msg(x.error.message,true);return}earnings=a.data||[];expenses=b.data||[];fuels=c.data||[];rents=d.data||[];settings=s.data||settings;renderAll()}
+function inMonth(date,m){return String(date||'').slice(0,7)===m}
+function totals(m){const es=earnings.filter(x=>inMonth(x.earning_date,m));const xs=expenses.filter(x=>inMonth(x.expense_date,m));const gross=es.reduce((t,x)=>t+Number(x.gross_amount||0)+Number(x.tips||0)+Number(x.bonus||0),0);const cost=xs.reduce((t,x)=>t+Number(x.amount||0),0);const rent=Number(settings.rental_amount||750)*((new Date(Number(m.slice(0,4)),Number(m.slice(5,7)),0).getDate())/7);const profit=gross-cost-rent;const reserve=Math.max(0,profit)*reservePct/100;return{es,xs,gross,cost,rent,profit,reserve,salary:profit-reserve}}
+function renderAll(){renderDashboard();renderEarnings();renderExpenses();renderFuel();renderRents();renderReport();$('settingsForm').elements.rental_amount.value=settings.rental_amount||750;$('settingsForm').elements.reserve_pct.value=reservePct}
+function renderDashboard(){const t=totals(monthNow());$('kGross').textContent=money(t.gross);$('kCosts').textContent=money(t.cost+t.rent);$('kProfit').textContent=money(t.profit);$('kSalary').textContent=money(t.salary);$('sEarnings').textContent=money(t.gross);$('sExpenses').textContent=money(t.cost);$('sRent').textContent=money(t.rent);$('sReserve').textContent=money(t.reserve);$('sTakeHome').textContent=money(t.salary);const pct=t.gross>0?Math.min(100,Math.max(0,(t.cost+t.rent)/t.gross*100)):0;$('costBar').style.width=pct+'%';$('costPct').textContent=pct.toFixed(1).replace('.',',')+'%';$('per100').textContent=money(t.gross?Math.max(0,t.profit)/t.gross*100:0);
+let rows=[...earnings.map(x=>({date:x.earning_date,type:'Ganho',desc:x.platform,value:Number(x.gross_amount)+Number(x.tips||0)+Number(x.bonus||0)})),...expenses.map(x=>({date:x.expense_date,type:'Despesa',desc:x.description||x.category,value:-Number(x.amount)}))].filter(x=>inMonth(x.date,monthNow())).sort((a,b)=>b.date.localeCompare(a.date)).slice(0,8);$('recentRows').innerHTML=rows.map(x=>`<tr><td>${esc(x.date)}</td><td><span class="pill">${x.type}</span></td><td>${esc(x.desc)}</td><td class="${x.value<0?'negative':'positive'}">${money(x.value)}</td></tr>`).join('');$('recentEmpty').classList.toggle('hidden',rows.length>0)}
+function renderEarnings(){const m=$('earnMonth').value||monthNow();const rows=earnings.filter(x=>inMonth(x.earning_date,m));$('earningRows').innerHTML=rows.map(x=>`<tr><td>${esc(x.earning_date)}</td><td>${esc(x.platform)}</td><td>${x.trips||0}</td><td>${x.km_driven||0}</td><td>${money(Number(x.gross_amount)+Number(x.tips||0)+Number(x.bonus||0))}</td><td><button class="btn danger" onclick="delRow('earnings','${x.id}')">Excluir</button></td></tr>`).join('');$('earningEmpty').classList.toggle('hidden',rows.length>0)}
+function renderExpenses(){const m=$('expenseMonth').value||monthNow();const rows=expenses.filter(x=>inMonth(x.expense_date,m));$('expenseRows').innerHTML=rows.map(x=>`<tr><td>${esc(x.expense_date)}</td><td>${esc(x.category)}</td><td>${esc(x.description)}</td><td>${money(x.amount)}</td><td><button class="btn danger" onclick="delRow('expenses','${x.id}')">Excluir</button></td></tr>`).join('');$('expenseEmpty').classList.toggle('hidden',rows.length>0)}
+function renderFuel(){$('fuelRows').innerHTML=fuels.map(x=>`<tr><td>${esc(x.fuel_date)}</td><td>${esc(x.fuel_type)}</td><td>${x.liters}</td><td>${x.odometer??'—'}</td><td>${money(x.total_amount)}</td></tr>`).join('');$('fuelEmpty').classList.toggle('hidden',fuels.length>0)}
+function renderRents(){$('rentRows').innerHTML=rents.map(x=>`<tr><td>${esc(x.due_date)}</td><td>${x.paid_date?esc(x.paid_date):'—'}</td><td>${money(x.amount)}</td><td><span class="pill">${esc(x.status)}</span></td><td><button class="btn danger" onclick="delRow('rental_payments','${x.id}')">Excluir</button></td></tr>`).join('');$('rentEmpty').classList.toggle('hidden',rents.length>0)}
+function renderReport(){const m=$('reportMonth').value||monthNow(),t=totals(m);$('rGross').textContent=money(t.gross);$('rExpenses').textContent=money(t.cost);$('rRent').textContent=money(t.rent);$('rProfit').textContent=money(t.profit);$('rReserve').textContent=money(t.reserve);$('rSalary').textContent=money(t.salary)}
+async function insert(table,data){const r=await db.from(table).insert({...data,user_id:currentUser.id});if(r.error){msg(r.error.message,true);return false}msg('Lançamento salvo e sincronizado.');await loadAll();return true}
+window.delRow=async(table,id)=>{if(!confirm('Deseja excluir este registro?'))return;const r=await db.from(table).delete().eq('id',id).eq('user_id',currentUser.id);if(r.error)msg(r.error.message,true);else{msg('Registro excluído.');await loadAll()}};
+$('earningForm').elements.earning_date.value=today();$('expenseForm').elements.expense_date.value=today();$('fuelForm').elements.fuel_date.value=today();$('rentForm').elements.due_date.value=today();
+$('earningForm').onsubmit=async e=>{e.preventDefault();const d=formObj(e.target);for(const k of ['gross_amount','tips','bonus','trips','hours_worked','km_driven'])d[k]=num(d[k])??0;await insert('earnings',d);e.target.reset();e.target.elements.earning_date.value=today();e.target.elements.tips.value=0;e.target.elements.bonus.value=0;e.target.elements.trips.value=0;e.target.elements.hours_worked.value=0;e.target.elements.km_driven.value=0};
+$('expenseForm').onsubmit=async e=>{e.preventDefault();const d=formObj(e.target);d.amount=num(d.amount);await insert('expenses',d);e.target.reset();e.target.elements.expense_date.value=today()};
+$('fuelForm').onsubmit=async e=>{e.preventDefault();const d=formObj(e.target);for(const k of ['liters','price_per_liter','total_amount','odometer'])d[k]=num(d[k]);await insert('fuel_logs',d);e.target.reset();e.target.elements.fuel_date.value=today()};
+$('rentForm').onsubmit=async e=>{e.preventDefault();const d=formObj(e.target);d.amount=num(d.amount);d.status=d.paid_date?'pago':'pendente';if(!d.paid_date)delete d.paid_date;await insert('rental_payments',d);e.target.reset();e.target.elements.due_date.value=today();e.target.elements.amount.value=750};
+$('settingsForm').onsubmit=async e=>{e.preventDefault();const d=formObj(e.target);const amt=num(d.rental_amount),pct=num(d.reserve_pct);const r=await db.from('driver_settings').upsert({user_id:currentUser.id,rental_amount:amt,rental_period:'semanal',vehicle_type:'alugado'},{onConflict:'user_id'});if(r.error){msg(r.error.message,true);return}settings={...settings,rental_amount:amt};reservePct=pct;msg('Configurações salvas.');renderAll()};
+['earnMonth','expenseMonth','reportMonth'].forEach(id=>{$(id).value=monthNow();$(id).addEventListener('change',()=>{renderEarnings();renderExpenses();renderReport()})});
+$('printBtn').onclick=()=>window.print();
+(async()=>{const {data:{session}}=await db.auth.getSession();if(session?.user)await boot(session.user);db.auth.onAuthStateChange((event,session)=>{if(event==='SIGNED_OUT'){currentUser=null;$('app').classList.add('hidden');$('auth').classList.remove('hidden')}})})();
+</script>
+<style>
+@media print{.sidebar,.top-actions,.section-head .toolbar,.btn{display:none!important}.layout{display:block}main{padding:0}.panel,.card{break-inside:avoid;box-shadow:none}}
+</style>
+</body>
+</html>
